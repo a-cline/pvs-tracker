@@ -224,12 +224,13 @@
   .tracker-table tr:last-child td { border-bottom: none; }
   .tracker-table tr:hover td { background: #FAFAF8; }
 
-  .col-page { width: 22%; font-weight: 500; font-size: 13px; }
-  .col-due { width: 11%; }
-  .col-status { width: 20%; }
-  .col-owner { width: 12%; }
-  .col-link { width: 12%; }
-  .col-notes { width: 23%; }
+  .col-page { width: 20%; font-weight: 500; font-size: 13px; }
+  .col-due { width: 9%; }
+  .col-status { width: 18%; }
+  .col-owner { width: 11%; }
+  .col-link { width: 10%; }
+  .col-copydoc { width: 10%; }
+  .col-notes { width: 22%; }
 
   /* PHASE 2 ROWS */
   .phase2-row td { opacity: var(--phase2-opacity); }
@@ -447,7 +448,6 @@
   .quick-link:hover { border-color: var(--text-muted); background: var(--surface-2); }
   .quick-link svg { opacity: 0.4; }
 
-  /* STATUS DROPDOWN */
   .status-dropdown {
     position: fixed;
     z-index: 1000;
@@ -816,9 +816,15 @@ function openStatusDropdown(e, id, type) {
     </div>
   `).join('');
   const rect = e.target.getBoundingClientRect();
+  const dropdownHeight = statuses.length * 36 + 12;
+  const spaceBelow = window.innerHeight - rect.bottom;
+  const showAbove = spaceBelow < dropdownHeight + 8;
+  dd.style.position = 'fixed';
   dd.style.display = 'block';
-  dd.style.top = (rect.bottom + window.scrollY + 4) + 'px';
   dd.style.left = rect.left + 'px';
+  dd.style.top = showAbove
+    ? (rect.top - dropdownHeight - 4) + 'px'
+    : (rect.bottom + 4) + 'px';
   activeDropdown = id;
 }
 
@@ -959,6 +965,7 @@ function renderCopy() {
           <th class="col-status">Status</th>
           <th class="col-owner">Waiting On</th>
           <th class="col-link">Questionnaire</th>
+          <th class="col-copydoc">Copy Doc</th>
           <th class="col-notes">Notes</th>
         </tr></thead>
         <tbody>${rows}</tbody>
@@ -977,6 +984,7 @@ function copyRowHTML(page, isPhase2) {
     <td class="col-status">${statusPillHTML(statusKey, COPY_STATUSES_COPY, page.id, 'copy')}</td>
     <td class="col-owner">${ownerBadgeHTML(owner)}</td>
     <td class="col-link">${editableLinkHTML(page.id, 'qlink', 'Questionnaire')}</td>
+    <td class="col-copydoc">${editableLinkHTML(page.id, 'copydoc', 'Copy Doc')}</td>
     <td class="col-notes">${notesHTML(page.id)}</td>
   </tr>`;
 }
