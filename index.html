@@ -707,31 +707,33 @@ const designMilestones = [
 let state = {};
 let currentFilter = 'all';
 let activeDropdown = null;
-const STORAGE_KEY = 'pvs-tracker-state';
+const FIREBASE_URL = 'https://pvs-tracker-default-rtdb.firebaseio.com/tracker.json';
 
 async function loadState() {
   try {
-    const result = await window.storage.get(STORAGE_KEY);
-    if (result && result.value) {
-      state = JSON.parse(result.value);
-    }
+    const res = await fetch(FIREBASE_URL);
+    const data = await res.json();
+    if (data) state = data;
   } catch(e) {
-    // Key doesn't exist yet or error — start fresh
+    console.warn('Firebase load failed, starting fresh:', e);
     state = {};
   }
 }
 
 let saveTimer = null;
-async function saveState() {
+function saveState() {
   updateLastUpdated();
   updateHeaderSummary();
-  // Debounce saves slightly to avoid hammering the API on rapid edits
   clearTimeout(saveTimer);
   saveTimer = setTimeout(async () => {
     try {
-      await window.storage.set(STORAGE_KEY, JSON.stringify(state));
+      await fetch(FIREBASE_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(state)
+      });
     } catch(e) {
-      console.warn('Storage save failed:', e);
+      console.warn('Firebase save failed:', e);
     }
   }, 400);
 }
@@ -1136,10 +1138,7 @@ async function init() {
     renderLoginScreen();
     return;
   }
-
-  // Show loading state briefly
   document.getElementById('header-summary').textContent = 'Loading...';
-
   await loadState();
   renderTech();
   renderCopy();
