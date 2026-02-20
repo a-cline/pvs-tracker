@@ -850,16 +850,28 @@ function editableDateHTML(id, defaultVal) {
 function editDate(e, id, defaultVal) {
   e.stopPropagation();
   const span = document.getElementById('date-' + id);
+  if (!span) return;
   const current = get(id, 'due', defaultVal);
-  span.innerHTML = `<input type="text" value="${current}" onblur="saveDate('${id}','${defaultVal}',this)" onkeydown="if(event.key==='Enter')this.blur()" style="width:90px" />`;
-  span.querySelector('input').focus();
-  span.querySelector('input').select();
-}
-
-function saveDate(id, defaultVal, input) {
-  set(id, 'due', input.value || defaultVal);
-  const span = document.getElementById('date-' + id);
-  span.textContent = get(id, 'due', defaultVal);
+  span.innerHTML = '';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = current;
+  input.style.width = '90px';
+  input.style.border = 'none';
+  input.style.outline = 'none';
+  input.style.fontFamily = 'DM Sans, sans-serif';
+  input.style.fontSize = '12px';
+  input.style.color = 'var(--text)';
+  input.style.background = 'transparent';
+  input.addEventListener('blur', () => {
+    const newVal = input.value.trim() || defaultVal;
+    set(id, 'due', newVal);
+    span.textContent = newVal;
+  });
+  input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') input.blur(); });
+  span.appendChild(input);
+  input.focus();
+  input.select();
 }
 
 // ==================== EDITABLE LINK ====================
@@ -867,30 +879,41 @@ function saveDate(id, defaultVal, input) {
 function editableLinkHTML(id, field, placeholder) {
   const val = get(id, field, '');
   if (val) {
-    return `<span class="editable-link"><a href="${val}" target="_blank" onclick="event.stopPropagation()">
+    return `<span class="editable-link" id="linkwrap-${id}-${field}"><a href="${val}" target="_blank" onclick="event.stopPropagation()">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
       ${placeholder}</a>
       <span style="margin-left:4px;color:var(--text-light);cursor:pointer;font-size:10px;" onclick="clearLink('${id}','${field}')">×</span>
     </span>`;
   }
-  return `<span class="editable-link"><span class="add-link" id="link-${id}-${field}" onclick="editLink(event,'${id}','${field}','${placeholder}')">+ Add</span></span>`;
+  return `<span class="editable-link" id="linkwrap-${id}-${field}"><span class="add-link" onclick="editLink(event,'${id}','${field}','${placeholder}')">+ Add</span></span>`;
 }
 
 function editLink(e, id, field, placeholder) {
   e.stopPropagation();
-  const span = document.getElementById('link-' + id + '-' + field);
-  span.outerHTML = `<span class="editable-link"><input id="linkinput-${id}-${field}" type="text" placeholder="Paste URL..." value="${get(id,field,'')}" 
-    onblur="saveLink('${id}','${field}','${placeholder}')" 
-    onkeydown="if(event.key==='Enter')this.blur()" /></span>`;
-  document.getElementById('linkinput-' + id + '-' + field).focus();
-}
-
-function saveLink(id, field, placeholder) {
-  const input = document.getElementById('linkinput-' + id + '-' + field);
-  if (input) {
-    set(id, field, input.value.trim());
-    reRenderRow(id, field === 'mockup' ? 'design' : 'copy');
-  }
+  const wrap = document.getElementById('linkwrap-' + id + '-' + field);
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.placeholder = 'Paste URL...';
+  input.value = get(id, field, '');
+  input.style.border = '1px solid var(--border)';
+  input.style.borderRadius = '4px';
+  input.style.padding = '2px 6px';
+  input.style.fontSize = '11px';
+  input.style.fontFamily = 'DM Sans, sans-serif';
+  input.style.color = 'var(--text)';
+  input.style.outline = 'none';
+  input.style.width = '100%';
+  input.addEventListener('blur', () => {
+    const val = input.value.trim();
+    set(id, field, val);
+    const type = field === 'mockup' ? 'design' : 'copy';
+    reRenderRow(id, type);
+  });
+  input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') input.blur(); if (ev.key === 'Escape') input.blur(); });
+  wrap.appendChild(input);
+  input.focus();
 }
 
 function clearLink(id, field) {
@@ -902,24 +925,44 @@ function clearLink(id, field) {
 
 function notesHTML(id) {
   const val = get(id, 'notes', '');
-  return `<span class="notes-cell ${val ? '' : 'empty'}" id="notes-${id}" onclick="editNotes(event,'${id}')">${val ? val : ''}</span>`;
+  const display = val || '';
+  const escaped = val.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  return `<span class="notes-cell ${val ? '' : 'empty'}" id="notes-${id}" 
+    onclick="editNotes(event,'${id}')" 
+    title="${val ? 'Click to edit' : 'Click to add note'}">${display || '—'}</span>`;
 }
 
 function editNotes(e, id) {
   e.stopPropagation();
   const span = document.getElementById('notes-' + id);
+  if (!span) return;
   const current = get(id, 'notes', '');
-  span.innerHTML = `<input type="text" value="${current}" placeholder="Add note..." 
-    onblur="saveNotes('${id}',this)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%" />`;
-  span.querySelector('input').focus();
+  span.innerHTML = '';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.value = current;
+  input.placeholder = 'Add note...';
+  input.style.width = '100%';
+  input.style.border = 'none';
+  input.style.outline = 'none';
+  input.style.fontFamily = 'DM Sans, sans-serif';
+  input.style.fontSize = '12px';
+  input.style.color = 'var(--text)';
+  input.style.background = 'transparent';
+  input.addEventListener('blur', () => saveNotes(id, input.value));
+  input.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') input.blur(); if (ev.key === 'Escape') { input.value = current; input.blur(); } });
+  span.appendChild(input);
+  input.focus();
+  input.select();
 }
 
-function saveNotes(id, input) {
-  set(id, 'notes', input.value.trim());
+function saveNotes(id, val) {
+  const trimmed = val.trim();
+  set(id, 'notes', trimmed);
   const span = document.getElementById('notes-' + id);
-  const val = get(id, 'notes', '');
-  span.className = 'notes-cell ' + (val ? '' : 'empty');
-  span.textContent = val || '';
+  if (!span) return;
+  span.className = 'notes-cell ' + (trimmed ? '' : 'empty');
+  span.innerHTML = trimmed || '—';
 }
 
 // ==================== RENDER TECH ====================
