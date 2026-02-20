@@ -1,0 +1,1155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Precision Veterinary Surgery · Project Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F5F2;
+    --surface: #FFFFFF;
+    --surface-2: #F2F0EC;
+    --border: #E4E0D8;
+    --text: #1A1814;
+    --text-muted: #7A7468;
+    --text-light: #B0A99E;
+    --de-bg: #EAF4F4;
+    --de-text: #1A6B6B;
+    --de-border: #B8DEDE;
+    --pvs-bg: #FDF3E7;
+    --pvs-text: #8B5C1A;
+    --pvs-border: #F0D4A8;
+    --done-bg: #EDF5EE;
+    --done-text: #2A6B35;
+    --done-border: #B8D9BC;
+    --pending-bg: #F5F0FF;
+    --pending-text: #5B3DB8;
+    --pending-border: #D4C8F5;
+    --phase2-opacity: 0.5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  .page-header {
+    background: var(--text);
+    color: white;
+    padding: 40px 48px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+  .page-header::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 300px; height: 100%;
+    background: linear-gradient(135deg, transparent 60%, rgba(255,255,255,0.04) 100%);
+    pointer-events: none;
+  }
+  .header-eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 8px;
+  }
+  .header-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+  }
+  .header-subtitle {
+    font-size: 13px;
+    color: rgba(255,255,255,0.55);
+    font-weight: 300;
+  }
+  .header-meta {
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .status-summary {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: rgba(255,255,255,0.7);
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #5BD68A;
+    flex-shrink: 0;
+  }
+  .last-updated {
+    font-size: 12px;
+    color: rgba(255,255,255,0.35);
+    margin-left: auto;
+  }
+
+  /* MAIN */
+  .main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 48px;
+  }
+
+  /* FILTER BAR */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 36px;
+  }
+  .filter-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-right: 4px;
+  }
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--text-muted); color: var(--text); }
+  .filter-btn.active {
+    background: var(--text);
+    border-color: var(--text);
+    color: white;
+  }
+
+  /* SECTION */
+  .section { margin-bottom: 48px; }
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1.5px solid var(--border);
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+  }
+  .section-count {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  /* TRANCHE */
+  .tranche { margin-bottom: 28px; }
+  .tranche-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .tranche-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .tranche-divider {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .tranche-badge {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 100px;
+    letter-spacing: 0.04em;
+  }
+  .tranche-badge.live { background: #EDF5EE; color: #2A6B35; border: 1px solid #B8D9BC; }
+  .tranche-badge.phase1 { background: #EAF0FB; color: #2A4B8B; border: 1px solid #B8CCF0; }
+  .tranche-badge.phase2 { background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+
+  /* TABLE */
+  .tracker-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--surface);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1.5px solid var(--border);
+  }
+  .tracker-table th {
+    text-align: left;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    padding: 10px 14px;
+    background: var(--surface-2);
+    border-bottom: 1.5px solid var(--border);
+  }
+  .tracker-table td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .tracker-table tr:last-child td { border-bottom: none; }
+  .tracker-table tr:hover td { background: #FAFAF8; }
+
+  .col-page { width: 22%; font-weight: 500; font-size: 13px; }
+  .col-due { width: 11%; }
+  .col-status { width: 20%; }
+  .col-owner { width: 12%; }
+  .col-link { width: 12%; }
+  .col-notes { width: 23%; }
+
+  /* PHASE 2 ROWS */
+  .phase2-row td { opacity: var(--phase2-opacity); }
+
+  /* STATUS PILLS */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    transition: opacity 0.15s;
+    border: 1px solid transparent;
+  }
+  .status-pill:hover { opacity: 0.8; }
+  .status-pill .pill-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+
+  .status-not-started { background: var(--surface-2); color: var(--text-muted); border-color: var(--border); }
+  .status-not-started .pill-dot { background: var(--text-light); }
+
+  .status-q-sent { background: #FFF8E7; color: #8B6914; border-color: #F0DFA0; }
+  .status-q-sent .pill-dot { background: #D4A017; }
+
+  .status-q-received { background: #FDF3E7; color: #8B5C1A; border-color: #F0D4A8; }
+  .status-q-received .pill-dot { background: #D4781A; }
+
+  .status-draft-shared { background: #EAF0FB; color: #2A4B8B; border-color: #B8CCF0; }
+  .status-draft-shared .pill-dot { background: #3A6BC8; }
+
+  .status-feedback { background: var(--pending-bg); color: var(--pending-text); border-color: var(--pending-border); }
+  .status-feedback .pill-dot { background: #7B5CD6; }
+
+  .status-approved { background: var(--done-bg); color: var(--done-text); border-color: var(--done-border); }
+  .status-approved .pill-dot { background: #3A8B48; }
+
+  .status-done { background: var(--done-bg); color: var(--done-text); border-color: var(--done-border); }
+  .status-done .pill-dot { background: #3A8B48; }
+
+  /* DESIGN STATUSES */
+  .status-mockup-shared { background: #EAF0FB; color: #2A4B8B; border-color: #B8CCF0; }
+  .status-mockup-shared .pill-dot { background: #3A6BC8; }
+  .status-feedback-received { background: var(--pending-bg); color: var(--pending-text); border-color: var(--pending-border); }
+  .status-feedback-received .pill-dot { background: #7B5CD6; }
+  .status-finalized { background: var(--done-bg); color: var(--done-text); border-color: var(--done-border); }
+  .status-finalized .pill-dot { background: #3A8B48; }
+
+  /* OWNER BADGE */
+  .owner-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 100px;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    border: 1px solid transparent;
+  }
+  .owner-de { background: var(--de-bg); color: var(--de-text); border-color: var(--de-border); }
+  .owner-pvs { background: var(--pvs-bg); color: var(--pvs-text); border-color: var(--pvs-border); }
+  .owner-done { background: var(--done-bg); color: var(--done-text); border-color: var(--done-border); }
+
+  /* EDITABLE DATE */
+  .editable-date {
+    font-size: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 3px 6px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .editable-date:hover { background: var(--surface-2); border-color: var(--border); }
+  .editable-date input {
+    border: none;
+    outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text);
+    background: transparent;
+    width: 90px;
+  }
+
+  /* EDITABLE LINK */
+  .editable-link {
+    font-size: 12px;
+    cursor: pointer;
+  }
+  .editable-link a {
+    color: var(--de-text);
+    text-decoration: none;
+    padding: 2px 5px;
+    border-radius: 4px;
+    border: 1px solid var(--de-border);
+    background: var(--de-bg);
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .editable-link a:hover { opacity: 0.8; }
+  .editable-link .add-link {
+    color: var(--text-light);
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px dashed var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-block;
+  }
+  .editable-link .add-link:hover { border-color: var(--text-muted); color: var(--text-muted); }
+  .editable-link input {
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    outline: none;
+    width: 100%;
+  }
+
+  /* NOTES */
+  .notes-cell {
+    font-size: 12px;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+    min-height: 22px;
+    transition: all 0.15s;
+  }
+  .notes-cell:hover { background: var(--surface-2); border-color: var(--border); }
+  .notes-cell.empty::before { content: '—'; color: var(--text-light); }
+  .notes-cell input {
+    border: none; outline: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    color: var(--text);
+    background: transparent;
+    width: 100%;
+  }
+
+  /* CHECKLIST (tech setup) */
+  .checklist { 
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .check-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s;
+  }
+  .check-item:last-child { border-bottom: none; }
+  .check-item:hover { background: #FAFAF8; }
+  .check-item.done-item { opacity: 0.55; }
+  .check-item.done-item .check-label { text-decoration: line-through; }
+  .custom-checkbox {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
+    background: white;
+  }
+  .custom-checkbox.checked {
+    background: var(--text);
+    border-color: var(--text);
+  }
+  .custom-checkbox.checked::after {
+    content: '';
+    width: 8px; height: 5px;
+    border-left: 1.5px solid white;
+    border-bottom: 1.5px solid white;
+    transform: rotate(-45deg) translateY(-1px);
+  }
+  .check-label { font-size: 13px; flex: 1; }
+  .check-owner { margin-left: auto; }
+
+  /* QUICK LINKS */
+  .quick-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .quick-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    text-decoration: none;
+    transition: all 0.15s;
+  }
+  .quick-link:hover { border-color: var(--text-muted); background: var(--surface-2); }
+  .quick-link svg { opacity: 0.4; }
+
+  /* STATUS DROPDOWN */
+  .status-dropdown {
+    position: fixed;
+    z-index: 1000;
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
+    padding: 6px;
+    min-width: 200px;
+  }
+  .status-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: background 0.1s;
+  }
+  .status-dropdown-item:hover { background: var(--surface-2); }
+  .dropdown-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+  /* HIDDEN / FILTERED */
+  .filtered-out { display: none !important; }
+
+  /* PROGRESS BAR */
+  .progress-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .progress-track {
+    flex: 1;
+    height: 3px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: rgba(255,255,255,0.6);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+  .progress-text { font-size: 11px; color: rgba(255,255,255,0.45); white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="header-eyebrow">Digital Empathy × Precision Veterinary Surgery</div>
+  <div class="header-title">Website Project Tracker</div>
+  <div class="header-subtitle">Warren, NJ · Target Launch: April 2025</div>
+  <div class="header-meta">
+    <div class="status-summary">
+      <span class="status-dot"></span>
+      <span id="header-summary">Loading...</span>
+    </div>
+    <div class="progress-mini">
+      <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+      <span class="progress-text" id="progress-text">0%</span>
+    </div>
+    <div class="last-updated" id="last-updated">—</div>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- QUICK LINKS -->
+  <div class="section" style="margin-bottom:28px;">
+    <div class="quick-links">
+      <a class="quick-link" href="https://drive.google.com/drive/u/0/folders/15VVLbIn-kl4Aqdy77mfrBECobC8sjwqa" target="_blank">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+        Google Drive Folder
+      </a>
+      <a class="quick-link" href="#" target="_blank">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+        Staging URL
+      </a>
+      <a class="quick-link" href="https://drive.google.com/drive/u/0/folders/18kQAYgSvu4DTDe_bL7cxGeUWeab3iA27" target="_blank">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Copywriting Folder
+      </a>
+      <a class="quick-link" href="https://docs.google.com/document/d/1MdYVp3JXgAmRI25jHzqaU5TRAumYFghWX4A6B45fppg/edit?tab=t.0#heading=h.lvxx1mlobmp1" target="_blank">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Content Strategy & Sitemap
+      </a>
+    </div>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <span class="filter-label">View</span>
+    <button class="filter-btn active" onclick="setFilter('all')">All Tasks</button>
+    <button class="filter-btn" onclick="setFilter('de')">Digital Empathy</button>
+    <button class="filter-btn" onclick="setFilter('pvs')">Precision Veterinary Surgery</button>
+  </div>
+
+  <!-- SECTION: TECHNICAL SETUP -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Technical Setup</span>
+      <span class="section-count" id="tech-count"></span>
+    </div>
+    <div class="checklist" id="tech-checklist">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+  <!-- SECTION: DESIGN -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Design Milestones</span>
+      <span class="section-count" id="design-count"></span>
+    </div>
+    <div id="design-table-wrap">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+  <!-- SECTION: COPYWRITING -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-title">Copywriting</span>
+      <span class="section-count" id="copy-count"></span>
+    </div>
+    <div id="copy-tranches">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+
+</div>
+
+<!-- STATUS DROPDOWN (shared) -->
+<div class="status-dropdown" id="status-dropdown" style="display:none;"></div>
+
+<script>
+// ==================== DATA ====================
+
+const COPY_STATUSES_COPY = [
+  { key: 'not-started', label: 'Not Started', cls: 'status-not-started', dot: '#B0A99E', owner: 'de' },
+  { key: 'q-sent',      label: 'Questionnaire Sent', cls: 'status-q-sent', dot: '#D4A017', owner: 'pvs' },
+  { key: 'q-received',  label: 'Answers Received', cls: 'status-q-received', dot: '#D4781A', owner: 'de' },
+  { key: 'draft-shared',label: 'Draft Shared', cls: 'status-draft-shared', dot: '#3A6BC8', owner: 'pvs' },
+  { key: 'feedback',    label: 'Feedback Received', cls: 'status-feedback', dot: '#7B5CD6', owner: 'de' },
+  { key: 'approved',    label: 'Final Draft Approved', cls: 'status-approved', dot: '#3A8B48', owner: 'done' },
+];
+
+const COPY_STATUSES_DESIGN = [
+  { key: 'not-started',        label: 'Not Started', cls: 'status-not-started', dot: '#B0A99E', owner: 'de' },
+  { key: 'mockup-shared',      label: 'Mockup Shared', cls: 'status-mockup-shared', dot: '#3A6BC8', owner: 'pvs' },
+  { key: 'feedback-received',  label: 'Feedback Received', cls: 'status-feedback-received', dot: '#7B5CD6', owner: 'de' },
+  { key: 'finalized',          label: 'Finalized', cls: 'status-finalized', dot: '#3A8B48', owner: 'done' },
+];
+
+const techItems = [
+  { id: 'tech-1', label: 'Purchase domain (precisionsurgery.vet)', owner: 'pvs' },
+  { id: 'tech-2', label: 'Set up Google Workspace & email addresses', owner: 'de' },
+  { id: 'tech-3', label: 'Provide email list for Google Workspace setup', owner: 'pvs' },
+  { id: 'tech-4', label: 'Complete Google Workspace payment form', owner: 'pvs' },
+  { id: 'tech-5', label: 'Confirm final domain choice', owner: 'pvs' },
+  { id: 'tech-6', label: 'Set up staging environment (WP Engine)', owner: 'de' },
+  { id: 'tech-7', label: 'Correct Google Maps listing (23 Mountain Blvd)', owner: 'de' },
+  { id: 'tech-8', label: 'Connect domain to live site at launch', owner: 'de' },
+];
+
+const copyTranches = [
+  {
+    id: 'tranche-1',
+    label: 'Tranche 1 — Live ASAP',
+    badge: 'live',
+    badgeLabel: 'Priority Launch',
+    phase: 1,
+    pages: [
+      { id: 'copy-hp', name: 'Homepage', due: 'Feb 28' },
+      { id: 'copy-contact', name: 'Contact Page', due: 'Feb 28' },
+    ]
+  },
+  {
+    id: 'tranche-2',
+    label: 'Tranche 2 — Core Launch Pages',
+    badge: 'phase1',
+    badgeLabel: 'Phase 1',
+    phase: 1,
+    pages: [
+      { id: 'copy-about', name: 'About / Meet the Team', due: 'Mar 7' },
+      { id: 'copy-careers', name: 'Careers', due: 'Mar 7' },
+    ]
+  },
+  {
+    id: 'tranche-3',
+    label: 'Tranche 3 — Orthopedic Cluster',
+    badge: 'phase1',
+    badgeLabel: 'Phase 1',
+    phase: 1,
+    pages: [
+      { id: 'copy-ortho', name: 'Orthopedic Surgery Overview', due: 'Mar 14' },
+      { id: 'copy-tplo', name: 'TPLO Surgery', due: 'Mar 14' },
+      { id: 'copy-tplo-recovery', name: 'TPLO Recovery & What to Expect', due: 'Mar 17' },
+      { id: 'copy-lateral', name: 'Lateral Suture Surgery', due: 'Mar 17' },
+      { id: 'copy-patella', name: 'Patella Luxation Surgery', due: 'Mar 21' },
+    ]
+  },
+  {
+    id: 'tranche-4',
+    label: 'Tranche 4 — Additional Services',
+    badge: 'phase1',
+    badgeLabel: 'Phase 1',
+    phase: 1,
+    pages: [
+      { id: 'copy-lap', name: 'Laparoscopic Surgery Overview', due: 'Mar 21' },
+      { id: 'copy-soft', name: 'Soft Tissue Surgery Overview', due: 'Mar 21' },
+      { id: 'copy-foreign', name: 'Foreign Body / Same-Day Urgent Surgery', due: 'Mar 24' },
+      { id: 'copy-ct', name: 'CT Scan for Pets in New Jersey', due: 'Mar 24' },
+      { id: 'copy-postop', name: 'Post-Operative Care & Recovery', due: 'Mar 24' },
+      { id: 'copy-pain', name: 'Pain Management', due: 'Mar 24' },
+      { id: 'copy-rehab', name: 'PT Rehab & Physical Therapy', due: 'Mar 28' },
+      { id: 'copy-pricing', name: 'Surgery Pricing in New Jersey', due: 'Mar 28' },
+      { id: 'copy-vets', name: 'Resources for Veterinarians', due: 'Mar 28' },
+    ]
+  },
+  {
+    id: 'tranche-5',
+    label: 'Tranche 5 — Phase 2 Depth',
+    badge: 'phase2',
+    badgeLabel: 'Phase 2',
+    phase: 2,
+    pages: [
+      { id: 'copy-lap-spay', name: 'Laparoscopic Spay', due: 'Post-Launch' },
+      { id: 'copy-lap-gastro', name: 'Laparoscopic Gastropexy', due: 'Post-Launch' },
+      { id: 'copy-lap-liver', name: 'Laparoscopic Liver Biopsy', due: 'Post-Launch' },
+      { id: 'copy-cruciate', name: 'Cruciate Ligament Injury Overview', due: 'Post-Launch' },
+      { id: 'copy-mass', name: 'Mass Removal Surgery', due: 'Post-Launch' },
+      { id: 'copy-onco', name: 'Oncological Surgery', due: 'Post-Launch' },
+      { id: 'copy-splenectomy', name: 'Splenectomy', due: 'Post-Launch' },
+      { id: 'copy-outpatient-ct', name: 'Outpatient CT for Referring Veterinarians', due: 'Post-Launch' },
+      { id: 'copy-acupuncture', name: 'Acupuncture & Integrative Support', due: 'Post-Launch' },
+      { id: 'copy-faq', name: 'FAQ', due: 'Post-Launch' },
+    ]
+  }
+];
+
+const designMilestones = [
+  { id: 'design-1', name: 'Milestone 1 — Homepage / Landing Page', due: 'Feb 28', notes: 'Brees sharing first version end of this week' },
+  { id: 'design-2', name: 'Milestone 2 — Contact Page', due: 'Mar 7', notes: '' },
+  { id: 'design-3', name: 'Milestone 3 — About / Team + Careers', due: 'Mar 14', notes: '' },
+  { id: 'design-4', name: 'Milestone 4 — Orthopedic Cluster Pages', due: 'Mar 21', notes: '' },
+  { id: 'design-5', name: 'Milestone 5 — Additional Services (Phase 1)', due: 'Mar 28', notes: '' },
+  { id: 'design-6', name: 'Milestone 6 — Full Phase 1 Site Review', due: 'Apr 1', notes: 'Launch target' },
+];
+
+// ==================== STATE ====================
+
+let state = {};
+let currentFilter = 'all';
+let activeDropdown = null;
+const STORAGE_KEY = 'pvs-tracker-state';
+
+async function loadState() {
+  try {
+    const result = await window.storage.get(STORAGE_KEY);
+    if (result && result.value) {
+      state = JSON.parse(result.value);
+    }
+  } catch(e) {
+    // Key doesn't exist yet or error — start fresh
+    state = {};
+  }
+}
+
+let saveTimer = null;
+async function saveState() {
+  updateLastUpdated();
+  updateHeaderSummary();
+  // Debounce saves slightly to avoid hammering the API on rapid edits
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try {
+      await window.storage.set(STORAGE_KEY, JSON.stringify(state));
+    } catch(e) {
+      console.warn('Storage save failed:', e);
+    }
+  }, 400);
+}
+
+function get(id, key, def) {
+  return (state[id] && state[id][key] !== undefined) ? state[id][key] : def;
+}
+function set(id, key, val) {
+  if (!state[id]) state[id] = {};
+  state[id][key] = val;
+  saveState();
+}
+
+// ==================== OWNER LOGIC ====================
+
+function getOwnerForStatus(statusKey, statuses) {
+  const s = statuses.find(s => s.key === statusKey);
+  return s ? s.owner : 'de';
+}
+
+function ownerBadgeHTML(owner) {
+  if (owner === 'done') return `<span class="owner-badge owner-done">✓ Done</span>`;
+  if (owner === 'pvs') return `<span class="owner-badge owner-pvs">Precision</span>`;
+  return `<span class="owner-badge owner-de">Digital Empathy</span>`;
+}
+
+function rowOwnerClass(owner) {
+  if (owner === 'done') return 'owner-done-row';
+  if (owner === 'pvs') return 'pvs-row';
+  return 'de-row';
+}
+
+// ==================== FILTER ====================
+
+function setFilter(f) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    if (b.textContent.includes('All') && f === 'all') b.classList.add('active');
+    if (b.textContent.includes('Digital Empathy') && f === 'de') b.classList.add('active');
+    if (b.textContent.includes('Precision') && f === 'pvs') b.classList.add('active');
+  });
+  applyFilter();
+}
+
+function applyFilter() {
+  if (currentFilter === 'all') {
+    document.querySelectorAll('[data-owner-row]').forEach(r => r.classList.remove('filtered-out'));
+    return;
+  }
+  document.querySelectorAll('[data-owner-row]').forEach(r => {
+    const owner = r.getAttribute('data-owner-row');
+    const visible = (currentFilter === 'de' && (owner === 'de')) ||
+                    (currentFilter === 'pvs' && (owner === 'pvs')) ||
+                    owner === 'done';
+    r.classList.toggle('filtered-out', !visible);
+  });
+}
+
+// ==================== STATUS PILL ====================
+
+function statusPillHTML(statusKey, statuses, id, type) {
+  const s = statuses.find(s => s.key === statusKey) || statuses[0];
+  return `<span class="status-pill ${s.cls}" onclick="openStatusDropdown(event,'${id}','${type}')" data-id="${id}" data-type="${type}">
+    <span class="pill-dot" style="background:${s.dot}"></span>
+    ${s.label}
+  </span>`;
+}
+
+function openStatusDropdown(e, id, type) {
+  e.stopPropagation();
+  const statuses = type === 'design' ? COPY_STATUSES_DESIGN : COPY_STATUSES_COPY;
+  const current = get(id, 'status', 'not-started');
+  const dd = document.getElementById('status-dropdown');
+  dd.innerHTML = statuses.map(s => `
+    <div class="status-dropdown-item" onclick="setStatus('${id}','${type}','${s.key}')">
+      <span class="dropdown-dot" style="background:${s.dot}"></span>
+      ${s.label}
+      ${s.key === current ? '<svg style="margin-left:auto;opacity:0.5" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
+    </div>
+  `).join('');
+  const rect = e.target.getBoundingClientRect();
+  dd.style.display = 'block';
+  dd.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+  dd.style.left = rect.left + 'px';
+  activeDropdown = id;
+}
+
+function setStatus(id, type, statusKey) {
+  set(id, 'status', statusKey);
+  document.getElementById('status-dropdown').style.display = 'none';
+  reRenderRow(id, type);
+  updateCounts();
+  applyFilter();
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('status-dropdown').style.display = 'none';
+});
+
+// ==================== EDITABLE DATE ====================
+
+function editableDateHTML(id, defaultVal) {
+  const val = get(id, 'due', defaultVal);
+  return `<span class="editable-date" id="date-${id}" onclick="editDate(event,'${id}','${defaultVal}')">${val}</span>`;
+}
+
+function editDate(e, id, defaultVal) {
+  e.stopPropagation();
+  const span = document.getElementById('date-' + id);
+  const current = get(id, 'due', defaultVal);
+  span.innerHTML = `<input type="text" value="${current}" onblur="saveDate('${id}','${defaultVal}',this)" onkeydown="if(event.key==='Enter')this.blur()" style="width:90px" />`;
+  span.querySelector('input').focus();
+  span.querySelector('input').select();
+}
+
+function saveDate(id, defaultVal, input) {
+  set(id, 'due', input.value || defaultVal);
+  const span = document.getElementById('date-' + id);
+  span.textContent = get(id, 'due', defaultVal);
+}
+
+// ==================== EDITABLE LINK ====================
+
+function editableLinkHTML(id, field, placeholder) {
+  const val = get(id, field, '');
+  if (val) {
+    return `<span class="editable-link"><a href="${val}" target="_blank" onclick="event.stopPropagation()">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+      ${placeholder}</a>
+      <span style="margin-left:4px;color:var(--text-light);cursor:pointer;font-size:10px;" onclick="clearLink('${id}','${field}')">×</span>
+    </span>`;
+  }
+  return `<span class="editable-link"><span class="add-link" id="link-${id}-${field}" onclick="editLink(event,'${id}','${field}','${placeholder}')">+ Add</span></span>`;
+}
+
+function editLink(e, id, field, placeholder) {
+  e.stopPropagation();
+  const span = document.getElementById('link-' + id + '-' + field);
+  span.outerHTML = `<span class="editable-link"><input id="linkinput-${id}-${field}" type="text" placeholder="Paste URL..." value="${get(id,field,'')}" 
+    onblur="saveLink('${id}','${field}','${placeholder}')" 
+    onkeydown="if(event.key==='Enter')this.blur()" /></span>`;
+  document.getElementById('linkinput-' + id + '-' + field).focus();
+}
+
+function saveLink(id, field, placeholder) {
+  const input = document.getElementById('linkinput-' + id + '-' + field);
+  if (input) {
+    set(id, field, input.value.trim());
+    reRenderRow(id, field === 'mockup' ? 'design' : 'copy');
+  }
+}
+
+function clearLink(id, field) {
+  set(id, field, '');
+  reRenderRow(id, field === 'mockup' ? 'design' : 'copy');
+}
+
+// ==================== EDITABLE NOTES ====================
+
+function notesHTML(id) {
+  const val = get(id, 'notes', '');
+  return `<span class="notes-cell ${val ? '' : 'empty'}" id="notes-${id}" onclick="editNotes(event,'${id}')">${val ? val : ''}</span>`;
+}
+
+function editNotes(e, id) {
+  e.stopPropagation();
+  const span = document.getElementById('notes-' + id);
+  const current = get(id, 'notes', '');
+  span.innerHTML = `<input type="text" value="${current}" placeholder="Add note..." 
+    onblur="saveNotes('${id}',this)" onkeydown="if(event.key==='Enter')this.blur()" style="width:100%" />`;
+  span.querySelector('input').focus();
+}
+
+function saveNotes(id, input) {
+  set(id, 'notes', input.value.trim());
+  const span = document.getElementById('notes-' + id);
+  const val = get(id, 'notes', '');
+  span.className = 'notes-cell ' + (val ? '' : 'empty');
+  span.textContent = val || '';
+}
+
+// ==================== RENDER TECH ====================
+
+function renderTech() {
+  const wrap = document.getElementById('tech-checklist');
+  wrap.innerHTML = techItems.map(item => {
+    const checked = get(item.id, 'checked', false);
+    const owner = item.owner;
+    return `<div class="check-item ${checked ? 'done-item' : ''}" data-owner-row="${checked ? 'done' : owner}" id="row-${item.id}">
+      <div class="custom-checkbox ${checked ? 'checked' : ''}" onclick="toggleTech('${item.id}')"></div>
+      <span class="check-label">${item.label}</span>
+      <span class="check-owner">${ownerBadgeHTML(checked ? 'done' : owner)}</span>
+    </div>`;
+  }).join('');
+  const done = techItems.filter(i => get(i.id, 'checked', false)).length;
+  document.getElementById('tech-count').textContent = `${done} / ${techItems.length} complete`;
+}
+
+function toggleTech(id) {
+  const current = get(id, 'checked', false);
+  set(id, 'checked', !current);
+  renderTech();
+  applyFilter();
+}
+
+// ==================== RENDER COPY ====================
+
+function renderCopy() {
+  const wrap = document.getElementById('copy-tranches');
+  wrap.innerHTML = copyTranches.map(tranche => {
+    const rows = tranche.pages.map(page => copyRowHTML(page, tranche.phase === 2)).join('');
+    return `<div class="tranche">
+      <div class="tranche-header">
+        <span class="tranche-label">${tranche.label}</span>
+        <span class="tranche-badge ${tranche.badge}">${tranche.badgeLabel}</span>
+        <span class="tranche-divider"></span>
+      </div>
+      <table class="tracker-table">
+        <thead><tr>
+          <th class="col-page">Page</th>
+          <th class="col-due">Due</th>
+          <th class="col-status">Status</th>
+          <th class="col-owner">Waiting On</th>
+          <th class="col-link">Questionnaire</th>
+          <th class="col-notes">Notes</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }).join('');
+  updateCopyCount();
+}
+
+function copyRowHTML(page, isPhase2) {
+  const statusKey = get(page.id, 'status', 'not-started');
+  const owner = getOwnerForStatus(statusKey, COPY_STATUSES_COPY);
+  return `<tr class="${isPhase2 ? 'phase2-row' : ''}" data-owner-row="${owner}" id="row-${page.id}">
+    <td class="col-page">${page.name}</td>
+    <td class="col-due">${editableDateHTML(page.id, page.due)}</td>
+    <td class="col-status">${statusPillHTML(statusKey, COPY_STATUSES_COPY, page.id, 'copy')}</td>
+    <td class="col-owner">${ownerBadgeHTML(owner)}</td>
+    <td class="col-link">${editableLinkHTML(page.id, 'qlink', 'Questionnaire')}</td>
+    <td class="col-notes">${notesHTML(page.id)}</td>
+  </tr>`;
+}
+
+// ==================== RENDER DESIGN ====================
+
+function renderDesign() {
+  const wrap = document.getElementById('design-table-wrap');
+  const rows = designMilestones.map(m => designRowHTML(m)).join('');
+  wrap.innerHTML = `<table class="tracker-table">
+    <thead><tr>
+      <th class="col-page">Milestone</th>
+      <th class="col-due">Due</th>
+      <th class="col-status">Status</th>
+      <th class="col-owner">Waiting On</th>
+      <th class="col-link">Mockup URL</th>
+      <th class="col-notes">Notes</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+  updateDesignCount();
+}
+
+function designRowHTML(m) {
+  const statusKey = get(m.id, 'status', 'not-started');
+  const owner = getOwnerForStatus(statusKey, COPY_STATUSES_DESIGN);
+  const notesVal = get(m.id, 'notes', m.notes || '');
+  if (!state[m.id]) state[m.id] = {};
+  if (!state[m.id].notes && m.notes) state[m.id].notes = m.notes;
+  return `<tr data-owner-row="${owner}" id="row-${m.id}">
+    <td class="col-page">${m.name}</td>
+    <td class="col-due">${editableDateHTML(m.id, m.due)}</td>
+    <td class="col-status">${statusPillHTML(statusKey, COPY_STATUSES_DESIGN, m.id, 'design')}</td>
+    <td class="col-owner">${ownerBadgeHTML(owner)}</td>
+    <td class="col-link">${editableLinkHTML(m.id, 'mockup', 'View Mockup')}</td>
+    <td class="col-notes">${notesHTML(m.id)}</td>
+  </tr>`;
+}
+
+// ==================== RE-RENDER ROW ====================
+
+function reRenderRow(id, type) {
+  const tr = document.getElementById('row-' + id);
+  if (!tr) return;
+  const isPhase2 = tr.classList.contains('phase2-row');
+
+  if (type === 'design') {
+    const m = designMilestones.find(m => m.id === id);
+    if (m) {
+      const tmp = document.createElement('tbody');
+      tmp.innerHTML = designRowHTML(m);
+      const newRow = tmp.firstChild;
+      tr.replaceWith(newRow);
+    }
+  } else {
+    let page = null;
+    for (const t of copyTranches) {
+      page = t.pages.find(p => p.id === id);
+      if (page) { break; }
+    }
+    if (page) {
+      const tmp = document.createElement('tbody');
+      tmp.innerHTML = copyRowHTML(page, isPhase2);
+      const newRow = tmp.firstChild;
+      tr.replaceWith(newRow);
+    }
+  }
+  updateCounts();
+  applyFilter();
+}
+
+// ==================== COUNTS & SUMMARY ====================
+
+function updateCopyCount() {
+  const all = copyTranches.flatMap(t => t.pages);
+  const done = all.filter(p => get(p.id, 'status', 'not-started') === 'approved').length;
+  document.getElementById('copy-count').textContent = `${done} / ${all.length} approved`;
+}
+
+function updateDesignCount() {
+  const done = designMilestones.filter(m => get(m.id, 'status', 'not-started') === 'finalized').length;
+  document.getElementById('design-count').textContent = `${done} / ${designMilestones.length} finalized`;
+}
+
+function updateCounts() {
+  updateCopyCount();
+  updateDesignCount();
+  updateHeaderSummary();
+}
+
+function updateHeaderSummary() {
+  const phase1Pages = copyTranches.filter(t => t.phase === 1).flatMap(t => t.pages);
+  const approvedP1 = phase1Pages.filter(p => get(p.id, 'status', 'not-started') === 'approved').length;
+  const designDone = designMilestones.filter(m => get(m.id, 'status', 'not-started') === 'finalized').length;
+  document.getElementById('header-summary').textContent =
+    `Phase 1 in progress · ${approvedP1} of ${phase1Pages.length} copy pages approved · ${designDone} of ${designMilestones.length} design milestones finalized`;
+  const pct = Math.round((approvedP1 / phase1Pages.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = pct + '% to launch';
+}
+
+function updateLastUpdated() {
+  const now = new Date();
+  document.getElementById('last-updated').textContent =
+    'Updated ' + now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' at ' +
+    now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+}
+
+// ==================== PASSWORD GATE ====================
+
+const CORRECT_PW = 'precise';
+
+function checkAuth() {
+  return sessionStorage.getItem('pvs-auth') === '1';
+}
+
+function renderLoginScreen() {
+  document.body.innerHTML = `
+    <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#F7F5F2;font-family:'DM Sans',sans-serif;">
+      <div style="background:white;border:1.5px solid #E4E0D8;border-radius:14px;padding:48px 44px;width:360px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.06);">
+        <div style="font-family:'DM Serif Display',serif;font-size:22px;color:#1A1814;margin-bottom:6px;">Project Tracker</div>
+        <div style="font-size:12px;color:#7A7468;margin-bottom:32px;letter-spacing:0.02em;">Digital Empathy × Precision Veterinary Surgery</div>
+        <input id="pw-input" type="password" placeholder="Enter password"
+          style="width:100%;padding:10px 14px;border:1.5px solid #E4E0D8;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:#1A1814;outline:none;margin-bottom:12px;text-align:center;letter-spacing:0.1em;"
+          onkeydown="if(event.key==='Enter')submitPW()"
+          oninput="document.getElementById('pw-error').style.display='none'" />
+        <div id="pw-error" style="display:none;font-size:12px;color:#c0392b;margin-bottom:10px;">Incorrect password. Try again.</div>
+        <button onclick="submitPW()"
+          style="width:100%;padding:10px;background:#1A1814;color:white;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;letter-spacing:0.03em;">
+          Enter
+        </button>
+      </div>
+    </div>`;
+  // Re-import fonts since we wiped the DOM
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap';
+  document.head.appendChild(link);
+  setTimeout(() => document.getElementById('pw-input')?.focus(), 100);
+}
+
+function submitPW() {
+  const val = document.getElementById('pw-input')?.value?.trim();
+  if (val === CORRECT_PW) {
+    sessionStorage.setItem('pvs-auth', '1');
+    location.reload();
+  } else {
+    const err = document.getElementById('pw-error');
+    if (err) err.style.display = 'block';
+    const inp = document.getElementById('pw-input');
+    if (inp) { inp.value = ''; inp.focus(); }
+  }
+}
+
+// ==================== INIT ====================
+
+async function init() {
+  if (!checkAuth()) {
+    renderLoginScreen();
+    return;
+  }
+
+  // Show loading state briefly
+  document.getElementById('header-summary').textContent = 'Loading...';
+
+  await loadState();
+  renderTech();
+  renderCopy();
+  renderDesign();
+  updateHeaderSummary();
+  updateLastUpdated();
+  applyFilter();
+}
+
+init();
+</script>
+</body>
+</html>
